@@ -127,7 +127,7 @@ export default function AuthPage() {
 
   const handleGoogle = () => {
     // Derive server origin from VITE_API_URL (default: http://localhost:5000/api)
-    const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000/api'
+    const apiUrl = import.meta.env.VITE_API_URL || (import.meta.env.PROD ? `${window.location.origin}/api` : 'http://localhost:5000/api')
     const serverOrigin = apiUrl.replace(/\/api\/?$/, '')
     window.location.href = `${serverOrigin}/auth/google`
   }
@@ -146,7 +146,11 @@ export default function AuthPage() {
       }
       navigate('/home')
     } catch (err) {
-      setError(err?.response?.data?.error || 'Something went wrong.')
+      if (!err?.response) {
+        setError('Cannot reach the server. Check your deployed API URL (VITE_API_URL) and backend CORS (CLIENT_URL).')
+      } else {
+        setError(err?.response?.data?.error || 'Something went wrong.')
+      }
     } finally {
       setLoading(false)
     }

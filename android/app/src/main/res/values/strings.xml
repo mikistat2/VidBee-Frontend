@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">VidBee</string>
+    <string name="title_activity_main">VidBee</string>
+    <string name="package_name">com.vidbee.app</string>
+    <string name="custom_url_scheme">com.vidbee.app</string>
+</resources>
