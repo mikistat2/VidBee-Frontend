@@ -4,4 +4,5 @@
     <string name="title_activity_main">VidBee</string>
     <string name="package_name">com.vidbee.app</string>
     <string name="custom_url_scheme">com.vidbee.app</string>
+    <string name="server_client_id">1070191817655-usiku083ejksbgqoal339k0j0dikfgs6.apps.googleusercontent.com</string>
 </resources>

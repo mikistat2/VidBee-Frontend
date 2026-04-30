@@ -42,11 +42,20 @@ export function AuthProvider({ children }) {
 
   const register = async (firstName, lastName, email, password) => {
     const res = await api.post('/auth/register', { firstName, lastName, email, password })
-    const { token, user } = res.data
+    const { token, user: newUser } = res.data
     localStorage.setItem('vidbee_token', token)
     api.defaults.headers.common['Authorization'] = `Bearer ${token}`
-    setUser(user)
-    return user
+    setUser(newUser)
+    return newUser
+  }
+
+  const googleLogin = async (idToken) => {
+    const res = await api.post('/auth/google/token', { idToken })
+    const { token, user: newUser } = res.data
+    localStorage.setItem('vidbee_token', token)
+    api.defaults.headers.common['Authorization'] = `Bearer ${token}`
+    setUser(newUser)
+    return newUser
   }
 
   const logout = () => {
@@ -56,7 +65,7 @@ export function AuthProvider({ children }) {
   }
 
   return (
-    <AuthContext.Provider value={{ user, loading, login, register, logout }}>
+    <AuthContext.Provider value={{ user, loading, login, register, googleLogin, logout }}>
       {children}
     </AuthContext.Provider>
   )

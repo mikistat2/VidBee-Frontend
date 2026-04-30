@@ -4,6 +4,8 @@ import { useAuth } from '../hooks/UseAuth'
 import { usePlatform } from '../hooks/usePlatform'
 import { GoogleIcon } from '../components/Icons'
 import { wakeUpServer } from '../lib/api'
+import { Capacitor } from '@capacitor/core'
+import { GoogleAuth } from '@codetrix-studio/capacitor-google-auth'
 
 function Field({ label, type = 'text', value, onChange, placeholder }) {
   return (
@@ -122,19 +124,49 @@ export default function AuthPage() {
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
 
-  const { login, register } = useAuth()
+  const { login, register, googleLogin } = useAuth()
   const navigate = useNavigate()
   const { isMobile } = usePlatform()
+
+  // Initialize Google Auth for native platform
+  useEffect(() => {
+    if (Capacitor.isNativePlatform()) {
+      GoogleAuth.initialize({
+        clientId: '1070191817655-usiku083ejksbgqoal339k0j0dikfgs6.apps.googleusercontent.com',
+        scopes: ['profile', 'email'],
+        grantOfflineAccess: true,
+      })
+    }
+  }, [])
 
   // Ping the server as soon as the auth page loads so it wakes up
   // before the user finishes filling in the form (Render free-tier cold start).
   useEffect(() => { wakeUpServer() }, [])
 
-  const handleGoogle = () => {
-    // Derive server origin from VITE_API_URL (default: http://localhost:5000/api)
-    const apiUrl = import.meta.env.VITE_API_URL || (import.meta.env.PROD ? `${window.location.origin}/api` : 'http://localhost:5000/api')
-    const serverOrigin = apiUrl.replace(/\/api\/?$/, '')
-    window.location.href = `${serverOrigin}/auth/google`
+  const handleGoogle = async () => {
+    setError('')
+    setLoading(true)
+    try {
+      if (Capacitor.isNativePlatform()) {
+        const googleUser = await GoogleAuth.signIn()
+        if (googleUser && googleUser.authentication && googleUser.authentication.idToken) {
+          await googleLogin(googleUser.authentication.idToken)
+          navigate('/home')
+        } else {
+          setError('Google login failed: missing idToken.')
+        }
+      } else {
+        // Derive server origin from VITE_API_URL (default: http://localhost:5000/api)
+        const apiUrl = import.meta.env.VITE_API_URL || (import.meta.env.PROD ? `${window.location.origin}/api` : 'http://localhost:5000/api')
+        const serverOrigin = apiUrl.replace(/\/api\/?$/, '')
+        window.location.href = `${serverOrigin}/auth/google`
+      }
+    } catch (err) {
+      console.error(err)
+      setError(err?.response?.data?.error || 'Google login failed or was cancelled.')
+    } finally {
+      setLoading(false)
+    }
   }
 
   const set = (key) => (e) => setForm((f) => ({ ...f, [key]: e.target.value }))
