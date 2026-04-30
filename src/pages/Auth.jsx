@@ -1,8 +1,9 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../hooks/UseAuth'
 import { usePlatform } from '../hooks/usePlatform'
 import { GoogleIcon } from '../components/Icons'
+import { wakeUpServer } from '../lib/api'
 
 function Field({ label, type = 'text', value, onChange, placeholder }) {
   return (
@@ -125,6 +126,10 @@ export default function AuthPage() {
   const navigate = useNavigate()
   const { isMobile } = usePlatform()
 
+  // Ping the server as soon as the auth page loads so it wakes up
+  // before the user finishes filling in the form (Render free-tier cold start).
+  useEffect(() => { wakeUpServer() }, [])
+
   const handleGoogle = () => {
     // Derive server origin from VITE_API_URL (default: http://localhost:5000/api)
     const apiUrl = import.meta.env.VITE_API_URL || (import.meta.env.PROD ? `${window.location.origin}/api` : 'http://localhost:5000/api')
@@ -147,7 +152,7 @@ export default function AuthPage() {
       navigate('/home')
     } catch (err) {
       if (!err?.response) {
-        setError('Cannot reach the server. Check your deployed API URL (VITE_API_URL) and backend CORS (CLIENT_URL).')
+        setError('Server is waking up — please wait a few seconds and try again.')
       } else {
         setError(err?.response?.data?.error || 'Something went wrong.')
       }
