@@ -1,0 +1,64 @@
+/* VidBee App — Custom styles that complement Tailwind */
+
+/* Custom scrollbar for a cleaner look */
+.scrollbar-thin::-webkit-scrollbar {
+  width: 4px;
+}
+.scrollbar-thin::-webkit-scrollbar-track {
+  background: transparent;
+}
+.scrollbar-thin::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.12);
+  border-radius: 4px;
+}
+.scrollbar-thin::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 0, 0, 0.2);
+}
+
+/* Safe area padding for mobile bottom nav */
+.safe-area-pb {
+  padding-bottom: env(safe-area-inset-bottom, 0);
+}
+
+/* Hide visible scrollbars in phone mode while keeping scrolling enabled */
+.mobile-no-scrollbar .overflow-auto,
+.mobile-no-scrollbar .overflow-scroll,
+.mobile-no-scrollbar .overflow-y-auto,
+.mobile-no-scrollbar .overflow-x-auto {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.mobile-no-scrollbar .overflow-auto::-webkit-scrollbar,
+.mobile-no-scrollbar .overflow-scroll::-webkit-scrollbar,
+.mobile-no-scrollbar .overflow-y-auto::-webkit-scrollbar,
+.mobile-no-scrollbar .overflow-x-auto::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+  display: none;
+}
+
+/* Route transition (subtle fade + slide) */
+.vb-page-transition {
+  height: 100%;
+  width: 100%;
+  animation: vbPageIn 220ms ease-out;
+  will-change: transform, opacity;
+}
+
+@keyframes vbPageIn {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .vb-page-transition {
+    animation: none;
+  }
+}
