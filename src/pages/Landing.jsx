@@ -1,6 +1,7 @@
 import { useNavigate } from 'react-router-dom'
 import { usePlatform } from '../hooks/usePlatform'
 import { useState } from 'react'
+import apkUrl from '../assets/VidBee.apk?url'
 
 const HIGHLIGHTS = [
   {
@@ -25,6 +26,71 @@ const HIGHLIGHTS = [
     accentRgb: '129,140,248',
   },
 ]
+
+function DownloadButton({ mobile = false, variant = 'yellow' }) {
+  const isYellow = variant === 'yellow'
+
+  return (
+    <a
+      href={apkUrl}
+      download="VidBee.apk"
+      style={{
+        position: 'relative',
+        display: 'inline-flex',
+        alignItems: 'center',
+        gap: mobile ? 12 : 18,
+        textDecoration: 'none',
+        borderRadius: mobile ? 16 : 22,
+        padding: mobile ? '16px 22px' : '22px 34px',
+        fontFamily: 'Syne, sans-serif',
+        fontWeight: 800,
+        fontSize: mobile ? 14 : 18,
+        letterSpacing: '-0.03em',
+        cursor: 'pointer',
+        background: isYellow ? '#facc15' : 'rgba(255,255,255,0.05)',
+        color: isYellow ? '#0b0d10' : '#facc15',
+        border: isYellow ? 'none' : '1.5px solid rgba(250,204,21,0.22)',
+        boxShadow: isYellow
+          ? '0 8px 32px rgba(250,204,21,0.28), 0 2px 8px rgba(0,0,0,0.4)'
+          : '0 8px 32px rgba(0,0,0,0.36), inset 0 1px 0 rgba(255,255,255,0.08)',
+        transition: 'transform 0.2s cubic-bezier(.34,1.56,.64,1), box-shadow 0.2s ease',
+        userSelect: 'none',
+      }}
+      onMouseEnter={e => {
+        e.currentTarget.style.transform = 'translateY(-3px) scale(1.025)';
+      }}
+      onMouseLeave={e => {
+        e.currentTarget.style.transform = '';
+      }}
+    >
+      <span style={{
+        width: mobile ? 36 : 48,
+        height: mobile ? 36 : 48,
+        borderRadius: mobile ? 10 : 14,
+        display: 'inline-flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        background: isYellow ? 'rgba(0,0,0,0.12)' : 'rgba(250,204,21,0.12)',
+        border: `1.5px solid ${isYellow ? 'rgba(0,0,0,0.10)' : 'rgba(250,204,21,0.22)'}`,
+        fontSize: mobile ? 16 : 22,
+        flexShrink: 0,
+      }}>⬇</span>
+
+      <span style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', lineHeight: 1 }}>
+        <span style={{ fontFamily: 'Syne, sans-serif', fontWeight: 800 }}>Download Android App</span>
+        <span style={{
+          fontFamily: 'DM Sans, sans-serif',
+          fontSize: mobile ? 10 : 12,
+          fontWeight: 600,
+          color: isYellow ? 'rgba(11,13,16,0.56)' : 'rgba(250,204,21,0.52)',
+          marginTop: 4,
+        }}>
+          APK file · install on Android
+        </span>
+      </span>
+    </a>
+  )
+}
 
 const GLOBAL_CSS = `
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -226,6 +292,9 @@ function MobileLanding({ navigate }) {
 
         {/* CTA */}
         <div style={{ padding:'24px 22px 38px', position:'relative', zIndex:2 }}>
+          <div style={{ marginBottom: 14 }}>
+            <DownloadButton mobile />
+          </div>
           <button
             onClick={() => navigate('/auth')}
             className="shimmer-btn"
@@ -460,6 +529,7 @@ function DesktopLanding({ navigate }) {
               >
                 Start for free →
               </button>
+              <DownloadButton />
               <div>
                 <p style={{ fontSize:13, color:'var(--text2)', fontWeight:500, fontFamily:'var(--font-body)', letterSpacing:'-0.01em' }}>No credit card needed</p>
                 <p style={{ fontSize:12, color:'var(--text3)', fontWeight:400, fontFamily:'var(--font-body)' }}>Free forever on basic plan</p>
