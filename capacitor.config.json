@@ -7,6 +7,7 @@
   },
   "plugins": {
     "GoogleAuth": {
+      "androidClientId": "1070191817655-37qg0rknhnf12ud5nklvnre4rjo37cqd.apps.googleusercontent.com",
       "scopes": ["profile", "email"],
       "serverClientId": "1070191817655-usiku083ejksbgqoal339k0j0dikfgs6.apps.googleusercontent.com",
       "forceCodeForRefreshToken": true

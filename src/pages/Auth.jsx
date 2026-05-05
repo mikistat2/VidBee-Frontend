@@ -7,6 +7,11 @@ import { wakeUpServer } from '../lib/api'
 import { Capacitor } from '@capacitor/core'
 import { GoogleAuth } from '@codetrix-studio/capacitor-google-auth'
 
+const googleAuthOptions = {
+  scopes: ['profile', 'email'],
+  grantOfflineAccess: true,
+}
+
 function Field({ label, type = 'text', value, onChange, placeholder }) {
   return (
     <div className="flex flex-col gap-1.5">
@@ -131,11 +136,7 @@ export default function AuthPage() {
   // Initialize Google Auth for native platform
   useEffect(() => {
     if (Capacitor.isNativePlatform()) {
-      GoogleAuth.initialize({
-        clientId: '1070191817655-usiku083ejksbgqoal339k0j0dikfgs6.apps.googleusercontent.com',
-        scopes: ['profile', 'email'],
-        grantOfflineAccess: true,
-      })
+      GoogleAuth.initialize(googleAuthOptions)
     }
   }, [])
 
@@ -163,7 +164,11 @@ export default function AuthPage() {
       }
     } catch (err) {
       console.error(err)
-      setError(err?.response?.data?.error || 'Google login failed or was cancelled.')
+      if (err?.code === '10' || err?.error?.code === '10') {
+        setError('Google Sign-In is misconfigured for Android. Verify the Android OAuth client ID, package name com.vidbee.app, and SHA-1 fingerprint in Google Cloud Console, then rebuild the app.')
+      } else {
+        setError(err?.response?.data?.error || 'Google login failed or was cancelled.')
+      }
     } finally {
       setLoading(false)
     }

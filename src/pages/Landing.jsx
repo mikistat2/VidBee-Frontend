@@ -27,65 +27,142 @@ const HIGHLIGHTS = [
   },
 ]
 
-function DownloadButton({ mobile = false, variant = 'yellow' }) {
-  const isYellow = variant === 'yellow'
+function DownloadButton({ mobile = false, variant = 'primary' }) {
+  const isPrimary = variant === 'primary'
 
+  // Official Android robot icon (Material Design / Google Play style)
+  const AndroidIcon = ({ size = 24, color = 'currentColor' }) => (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill={color}
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      {/* Antenna left */}
+      <line x1="8.5" y1="2" x2="6" y2="5.5" stroke={color} strokeWidth="1.5" strokeLinecap="round"/>
+      {/* Antenna right */}
+      <line x1="15.5" y1="2" x2="18" y2="5.5" stroke={color} strokeWidth="1.5" strokeLinecap="round"/>
+      {/* Head / body shell */}
+      <path d="M5 10.5C5 8.567 6.567 7 8.5 7h7C17.433 7 19 8.567 19 10.5V16a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2v-5.5z"/>
+      {/* Eyes */}
+      <circle cx="9.5" cy="11" r="1" fill={isPrimary ? '#0a1a10' : '#3ddc84'}/>
+      <circle cx="14.5" cy="11" r="1" fill={isPrimary ? '#0a1a10' : '#3ddc84'}/>
+      {/* Left arm */}
+      <rect x="2" y="9.5" width="2.2" height="5" rx="1.1" />
+      {/* Right arm */}
+      <rect x="19.8" y="9.5" width="2.2" height="5" rx="1.1" />
+      {/* Left leg */}
+      <rect x="8" y="18" width="2.2" height="3.5" rx="1.1" />
+      {/* Right leg */}
+      <rect x="13.8" y="18" width="2.2" height="3.5" rx="1.1" />
+    </svg>
+  )
+
+  const iconSize = mobile ? 17 : 22
+  const badgeSize = mobile ? 38 : 50
+  const badgeRadius = mobile ? 10 : 14
+
+  if (isPrimary) {
+    return (
+      <a
+        href={apkUrl}
+        download="VidBee.apk"
+        className="group relative inline-flex items-center no-underline select-none
+          bg-gradient-to-br from-[#3ddc84] to-[#22a862]
+          text-[#061a0e] font-black tracking-tight
+          shadow-[0_6px_28px_rgba(61,220,132,0.32),0_2px_6px_rgba(0,0,0,0.45)]
+          transition-all duration-[220ms] ease-[cubic-bezier(.34,1.56,.64,1)]
+          hover:-translate-y-[3px] hover:scale-[1.025]
+          hover:shadow-[0_14px_40px_rgba(61,220,132,0.42),0_4px_10px_rgba(0,0,0,0.5)]
+          active:scale-[0.97] active:translate-y-0"
+        style={{
+          gap: mobile ? 11 : 15,
+          borderRadius: mobile ? 16 : 22,
+          padding: mobile ? '13px 18px' : '16px 26px',
+          fontSize: mobile ? 13.5 : 16,
+          fontFamily: 'Syne, sans-serif',
+          letterSpacing: '-0.03em',
+        }}
+      >
+        {/* Gloss shine */}
+        <span className="absolute inset-0 pointer-events-none rounded-[inherit] bg-gradient-to-b from-white/25 to-transparent" />
+
+        {/* Android icon badge */}
+        <span
+          className="relative z-10 inline-flex items-center justify-center flex-shrink-0
+            bg-black/[0.13] border border-black/[0.10]
+            transition-transform duration-200 group-hover:-rotate-6"
+          style={{ width: badgeSize, height: badgeSize, borderRadius: badgeRadius }}
+        >
+          <AndroidIcon size={iconSize} color="#061a0e" />
+        </span>
+
+        {/* Label */}
+        <span className="relative z-10 flex flex-col items-start" style={{ lineHeight: 1 }}>
+          <span style={{ fontFamily: 'Syne, sans-serif', fontWeight: 800 }}>
+            Download for Android
+          </span>
+          <span
+            className="text-[#061a0e]/50 font-semibold"
+            style={{
+              fontFamily: 'DM Sans, sans-serif',
+              fontSize: mobile ? 10 : 11.5,
+              marginTop: 4,
+            }}
+          >
+            Free APK · No Play Store needed
+          </span>
+        </span>
+      </a>
+    )
+  }
+
+  // Ghost variant
   return (
     <a
       href={apkUrl}
       download="VidBee.apk"
+      className="group relative inline-flex items-center no-underline select-none
+        bg-[rgba(61,220,132,0.06)] text-[#3ddc84] font-black tracking-tight
+        border border-[rgba(61,220,132,0.22)]
+        shadow-[0_6px_28px_rgba(0,0,0,0.38),inset_0_1px_0_rgba(255,255,255,0.07)]
+        transition-all duration-[220ms] ease-[cubic-bezier(.34,1.56,.64,1)]
+        hover:-translate-y-[3px] hover:scale-[1.025]
+        hover:bg-[rgba(61,220,132,0.10)] hover:border-[rgba(61,220,132,0.38)]
+        hover:shadow-[0_14px_36px_rgba(0,0,0,0.5)]
+        active:scale-[0.97] active:translate-y-0"
       style={{
-        position: 'relative',
-        display: 'inline-flex',
-        alignItems: 'center',
-        gap: mobile ? 12 : 18,
-        textDecoration: 'none',
+        gap: mobile ? 11 : 15,
         borderRadius: mobile ? 16 : 22,
-        padding: mobile ? '16px 22px' : '22px 34px',
+        padding: mobile ? '13px 18px' : '16px 26px',
+        fontSize: mobile ? 13.5 : 16,
         fontFamily: 'Syne, sans-serif',
-        fontWeight: 800,
-        fontSize: mobile ? 14 : 18,
         letterSpacing: '-0.03em',
-        cursor: 'pointer',
-        background: isYellow ? '#facc15' : 'rgba(255,255,255,0.05)',
-        color: isYellow ? '#0b0d10' : '#facc15',
-        border: isYellow ? 'none' : '1.5px solid rgba(250,204,21,0.22)',
-        boxShadow: isYellow
-          ? '0 8px 32px rgba(250,204,21,0.28), 0 2px 8px rgba(0,0,0,0.4)'
-          : '0 8px 32px rgba(0,0,0,0.36), inset 0 1px 0 rgba(255,255,255,0.08)',
-        transition: 'transform 0.2s cubic-bezier(.34,1.56,.64,1), box-shadow 0.2s ease',
-        userSelect: 'none',
-      }}
-      onMouseEnter={e => {
-        e.currentTarget.style.transform = 'translateY(-3px) scale(1.025)';
-      }}
-      onMouseLeave={e => {
-        e.currentTarget.style.transform = '';
       }}
     >
-      <span style={{
-        width: mobile ? 36 : 48,
-        height: mobile ? 36 : 48,
-        borderRadius: mobile ? 10 : 14,
-        display: 'inline-flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        background: isYellow ? 'rgba(0,0,0,0.12)' : 'rgba(250,204,21,0.12)',
-        border: `1.5px solid ${isYellow ? 'rgba(0,0,0,0.10)' : 'rgba(250,204,21,0.22)'}`,
-        fontSize: mobile ? 16 : 22,
-        flexShrink: 0,
-      }}>⬇</span>
+      <span
+        className="inline-flex items-center justify-center flex-shrink-0
+          bg-[rgba(61,220,132,0.10)] border border-[rgba(61,220,132,0.22)]
+          transition-transform duration-200 group-hover:-rotate-6"
+        style={{ width: badgeSize, height: badgeSize, borderRadius: badgeRadius }}
+      >
+        <AndroidIcon size={iconSize} color="#3ddc84" />
+      </span>
 
-      <span style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', lineHeight: 1 }}>
-        <span style={{ fontFamily: 'Syne, sans-serif', fontWeight: 800 }}>Download Android App</span>
-        <span style={{
-          fontFamily: 'DM Sans, sans-serif',
-          fontSize: mobile ? 10 : 12,
-          fontWeight: 600,
-          color: isYellow ? 'rgba(11,13,16,0.56)' : 'rgba(250,204,21,0.52)',
-          marginTop: 4,
-        }}>
-          APK file · install on Android
+      <span className="flex flex-col items-start" style={{ lineHeight: 1 }}>
+        <span style={{ fontFamily: 'Syne, sans-serif', fontWeight: 800 }}>
+          Download for Android
+        </span>
+        <span
+          className="text-[#3ddc84]/45 font-semibold"
+          style={{
+            fontFamily: 'DM Sans, sans-serif',
+            fontSize: mobile ? 10 : 11.5,
+            marginTop: 4,
+          }}
+        >
+          Free APK · No Play Store needed
         </span>
       </span>
     </a>
