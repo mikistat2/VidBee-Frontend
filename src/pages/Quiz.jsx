@@ -16,6 +16,7 @@ export default function QuizPage() {
   const [shareCopied, setShareCopied] = useState(false)
   const timerRef = useRef(null)
   const isSharedSession = Boolean(shareToken)
+  const hasAuthToken = Boolean(localStorage.getItem('vidbee_token'))
   const appBaseUrl = import.meta.env.VITE_APP_URL || window.location.origin
   const shareKey = session?.share_token || session?.id
   const shareUrl = shareKey ? `${appBaseUrl}/share/${shareKey}` : ''
@@ -25,8 +26,19 @@ export default function QuizPage() {
       const token = localStorage.getItem('vidbee_token')
 
       if (!token) {
-        navigate('/auth')
-        return
+        api.get(`/quiz/share/${shareToken}`).then(r => {
+          setSession(r.data.session)
+          setQuestions(r.data.questions || [])
+
+          const existingAnswers = Object.fromEntries((r.data.answers || []).map((answer) => [String(answer.question_id), answer.selected_answer]))
+          setAnswers(existingAnswers)
+
+          const firstUnanswered = (r.data.questions || []).findIndex((question) => !existingAnswers[String(question.id)])
+          setCurrent(firstUnanswered >= 0 ? firstUnanswered : 0)
+        }).catch(() => navigate('/'))
+
+        timerRef.current = setInterval(() => setSeconds(s => s + 1), 1000)
+        return () => clearInterval(timerRef.current)
       }
 
       api.post(`/quiz/share/${shareToken}/join`).then((r) => {
@@ -88,6 +100,12 @@ export default function QuizPage() {
 
   const selectAnswer = async (opt) => {
     if (selectedAnswer) return
+
+    if (isSharedSession && !hasAuthToken) {
+      navigate('/auth')
+      return
+    }
+
     const newAnswers = { ...answers, [q.id]: opt }
     setAnswers(newAnswers)
     if (answerMode === 'immediate') {
