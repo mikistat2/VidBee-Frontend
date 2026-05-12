@@ -22,7 +22,8 @@ export default function ResultsPage() {
   )
 
   const { session, questions, answers } = results
-  const shareUrl = session?.share_token ? `${appBaseUrl}/share/${session.share_token}` : ''
+  const shareKey = session?.share_token || session?.id
+  const shareUrl = shareKey ? `${appBaseUrl}/share/${shareKey}` : ''
   const total = questions.length
   const correct = answers.filter(a => a.is_correct).length
   const wrong = total - correct

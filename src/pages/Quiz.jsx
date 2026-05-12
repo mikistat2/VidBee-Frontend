@@ -17,7 +17,8 @@ export default function QuizPage() {
   const timerRef = useRef(null)
   const isSharedSession = Boolean(shareToken)
   const appBaseUrl = import.meta.env.VITE_APP_URL || window.location.origin
-  const shareUrl = session?.share_token ? `${appBaseUrl}/share/${session.share_token}` : ''
+  const shareKey = session?.share_token || session?.id
+  const shareUrl = shareKey ? `${appBaseUrl}/share/${shareKey}` : ''
 
   useEffect(() => {
     if (isSharedSession) {
