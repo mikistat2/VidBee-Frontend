@@ -22,7 +22,7 @@ export default function ResultsPage() {
   )
 
   const { session, questions, answers } = results
-  const shareKey = session?.share_token || session?.id
+  const shareKey = session?.shared_quiz_token || session?.share_token
   const shareUrl = shareKey ? `${appBaseUrl}/share/${shareKey}` : ''
   const total = questions.length
   const correct = answers.filter(a => a.is_correct).length
@@ -40,11 +40,11 @@ export default function ResultsPage() {
     return a && !a.is_correct
   })
 
-  const props = { session, questions, answers, total, correct, wrong, score, grade, wrongQuestions, navigate, sessionId, shareToken, shareUrl }
+  const props = { session, questions, answers, total, correct, wrong, score, grade, wrongQuestions, navigate, shareUrl }
   return isMobile ? <MobileResults {...props} /> : <WebResults {...props} />
 }
 
-function WebResults({ session, questions, answers, total, correct, wrong, score, grade, wrongQuestions, navigate, sessionId, shareToken, shareUrl }) {
+function WebResults({ session, questions, answers, total, correct, wrong, score, grade, wrongQuestions, navigate, shareUrl }) {
   return (
     <div className="flex flex-col h-full bg-white">
       <div className="bg-white border-b border-black/8 px-7 h-14 flex items-center justify-between shrink-0">
