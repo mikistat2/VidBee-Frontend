@@ -25,6 +25,11 @@ const HIGHLIGHTS = [
     accent: '#818CF8',
     accentRgb: '129,140,248',
   },
+  {
+    icon: '🔗',
+    title: 'Shareable link to do the same quiz together',
+    desc: 'share a quiz with a friend to have the exact question to both test your undertaning at the same time.'
+  }
 ]
 
 function DownloadButton({ mobile = false, variant = 'primary' }) {

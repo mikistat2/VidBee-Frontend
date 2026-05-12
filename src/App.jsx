@@ -19,6 +19,7 @@ function AppRoutes() {
   const { user, loading } = useAuth()
   const { isMobile } = usePlatform()
   const location = useLocation()
+  const isFullscreenRoute = location.pathname.startsWith('/quiz/') || location.pathname.startsWith('/share/')
 
   // Show loading spinner while checking auth status
   if (loading) {
@@ -36,6 +37,8 @@ function AppRoutes() {
                 <Route path="/" element={<LandingPage />} />
                 <Route path="/auth" element={<AuthPage />} />
                 <Route path="/oauth/google/callback" element={<OAuthGoogleCallbackPage />} />
+                <Route path="/share/:shareToken" element={<QuizPage />} />
+                <Route path="/share/:shareToken/results" element={<ResultsPage />} />
                 <Route path="*" element={<Navigate to="/" replace />} />
               </>
             )
@@ -44,6 +47,8 @@ function AppRoutes() {
                 <Route path="/" element={<LandingPage />} />
                 <Route path="/auth" element={<AuthPage />} />
                 <Route path="/oauth/google/callback" element={<OAuthGoogleCallbackPage />} />
+                <Route path="/share/:shareToken" element={<QuizPage />} />
+                <Route path="/share/:shareToken/results" element={<ResultsPage />} />
                 <Route path="*" element={<Navigate to="/" replace />} />
               </>
             )}
@@ -52,14 +57,14 @@ function AppRoutes() {
     )
   }
 
-  // Quiz page — full screen, no sidebar layout (has its own layout)
-  const isQuizRoute = location.pathname.startsWith('/quiz/')
-
-  if (isQuizRoute) {
+  // Quiz/share pages — full screen, no sidebar layout (has its own layout)
+  if (isFullscreenRoute) {
     return (
       <div key={location.pathname} className="vb-page-transition">
         <Routes>
           <Route path="/quiz/:sessionId" element={<QuizPage />} />
+          <Route path="/share/:shareToken" element={<QuizPage />} />
+          <Route path="/share/:shareToken/results" element={<ResultsPage />} />
           <Route path="*" element={<Navigate to="/home" replace />} />
         </Routes>
       </div>

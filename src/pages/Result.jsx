@@ -4,14 +4,16 @@ import { usePlatform } from '../hooks/usePlatform'
 import api from '../lib/api'
 
 export default function ResultsPage() {
-  const { sessionId } = useParams()
+  const { sessionId, shareToken } = useParams()
   const navigate = useNavigate()
   const { isMobile } = usePlatform()
   const [results, setResults] = useState(null)
+  const appBaseUrl = import.meta.env.VITE_APP_URL || window.location.origin
 
   useEffect(() => {
-    api.get(`/quiz/results/${sessionId}`).then(r => setResults(r.data)).catch(() => navigate('/'))
-  }, [sessionId])
+    const endpoint = shareToken ? `/quiz/share/${shareToken}/results` : `/quiz/results/${sessionId}`
+    api.get(endpoint).then(r => setResults(r.data)).catch(() => navigate('/'))
+  }, [sessionId, shareToken, navigate])
 
   if (!results) return (
     <div className="flex items-center justify-center h-full">
@@ -20,6 +22,7 @@ export default function ResultsPage() {
   )
 
   const { session, questions, answers } = results
+  const shareUrl = session?.share_token ? `${appBaseUrl}/share/${session.share_token}` : ''
   const total = questions.length
   const correct = answers.filter(a => a.is_correct).length
   const wrong = total - correct
@@ -36,20 +39,21 @@ export default function ResultsPage() {
     return a && !a.is_correct
   })
 
-  const props = { session, questions, answers, total, correct, wrong, score, grade, wrongQuestions, navigate, sessionId }
+  const props = { session, questions, answers, total, correct, wrong, score, grade, wrongQuestions, navigate, sessionId, shareToken, shareUrl }
   return isMobile ? <MobileResults {...props} /> : <WebResults {...props} />
 }
 
-function WebResults({ session, questions, answers, total, correct, wrong, score, grade, wrongQuestions, navigate, sessionId }) {
+function WebResults({ session, questions, answers, total, correct, wrong, score, grade, wrongQuestions, navigate, sessionId, shareToken, shareUrl }) {
   return (
     <div className="flex flex-col h-full bg-white">
-      <div className="bg-white border-b border-black/8 px-7 h-[56px] flex items-center justify-between shrink-0">
+      <div className="bg-white border-b border-black/8 px-7 h-14 flex items-center justify-between shrink-0">
         <span className="text-[17px] font-medium">Quiz results</span>
         <div className="flex gap-2">
+          {shareUrl && <button onClick={() => navigator.clipboard.writeText(shareUrl)} className="px-4 py-2 border border-gray-200 text-[15px] rounded-lg hover:bg-amber-300 bg-amber-400">Share link</button>}
           <button onClick={() => navigate('/')} className="px-4 py-2 border border-gray-200 text-[15px] rounded-lg hover:bg-gray-50">
             Upload new
           </button>
-          <button onClick={() => navigate(`/configure/${session.upload_id}?difficulty=${session.difficulty}&count=${session.question_count}`)} className="px-4 py-2 bg-[#1a1a1a] text-white text-[15px] font-medium rounded-lg">
+          <button onClick={() => navigate(`/configure/${session.upload_id}?difficulty=${session.config?.difficulty || 'medium'}&count=${session.config?.questionCount || total}&mode=${session.config?.answerMode || 'immediate'}`)} className="px-4 py-2 bg-[#1a1a1a] text-white text-[15px] font-medium rounded-lg">
             Retake quiz
           </button>
         </div>
@@ -125,7 +129,7 @@ function WebResults({ session, questions, answers, total, correct, wrong, score,
   )
 }
 
-function MobileResults({ session, questions, answers, total, correct, wrong, score, grade, wrongQuestions, navigate }) {
+function MobileResults({ session, questions, answers, total, correct, wrong, score, grade, wrongQuestions, navigate, shareUrl }) {
   return (
     <div className="flex flex-col h-full bg-white">
       <div className="px-4 pt-4 pb-2 border-b border-gray-100 shrink-0">
@@ -186,10 +190,11 @@ function MobileResults({ session, questions, answers, total, correct, wrong, sco
       </div>
 
       <div className="p-4 border-t border-gray-100 flex gap-2 shrink-0">
+        {shareUrl && <button onClick={() => navigator.clipboard.writeText(shareUrl)} className="flex-1 py-2.5 border border-gray-200 rounded-xl text-[14px] text-gray-500">Share</button>}
         <button onClick={() => navigate('/')} className="flex-1 py-2.5 border border-gray-200 rounded-xl text-[14px] text-gray-500">
           Home
         </button>
-        <button onClick={() => navigate(`/configure/${session.upload_id}?difficulty=${session.difficulty}&count=${session.question_count}`)} className="flex-2 py-2.5 bg-[#1a1a1a] text-white rounded-xl text-[14px] font-medium">
+        <button onClick={() => navigate(`/configure/${session.upload_id}?difficulty=${session.config?.difficulty || 'medium'}&count=${session.config?.questionCount || total}&mode=${session.config?.answerMode || 'immediate'}`)} className="flex-2 py-2.5 bg-[#1a1a1a] text-white rounded-xl text-[14px] font-medium">
           Retake quiz
         </button>
       </div>

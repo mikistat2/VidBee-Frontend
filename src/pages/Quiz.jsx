@@ -4,7 +4,7 @@ import { usePlatform } from '../hooks/usePlatform'
 import api from '../lib/api'
 
 export default function QuizPage() {
-  const { sessionId } = useParams()
+  const { sessionId, shareToken } = useParams()
   const navigate = useNavigate()
   const { isMobile } = usePlatform()
   const [session, setSession] = useState(null)
@@ -13,16 +13,52 @@ export default function QuizPage() {
   const [answers, setAnswers] = useState({})
   const [revealed, setRevealed] = useState({})
   const [seconds, setSeconds] = useState(0)
+  const [shareCopied, setShareCopied] = useState(false)
   const timerRef = useRef(null)
+  const isSharedSession = Boolean(shareToken)
+  const appBaseUrl = import.meta.env.VITE_APP_URL || window.location.origin
+  const shareUrl = session?.share_token ? `${appBaseUrl}/share/${session.share_token}` : ''
 
   useEffect(() => {
+    if (isSharedSession) {
+      const token = localStorage.getItem('vidbee_token')
+
+      if (!token) {
+        navigate('/auth')
+        return
+      }
+
+      api.post(`/quiz/share/${shareToken}/join`).then((r) => {
+        navigate(`/quiz/${r.data.sessionId}`, { replace: true })
+      }).catch(() => navigate('/'))
+      return
+    }
+
     api.get(`/quiz/session/${sessionId}`).then(r => {
       setSession(r.data.session)
-      setQuestions(r.data.questions)
+      setQuestions(r.data.questions || [])
+
+      const existingAnswers = Object.fromEntries((r.data.answers || []).map((answer) => [String(answer.question_id), answer.selected_answer]))
+      setAnswers(existingAnswers)
+
+      const firstUnanswered = (r.data.questions || []).findIndex((question) => !existingAnswers[String(question.id)])
+      setCurrent(firstUnanswered >= 0 ? firstUnanswered : 0)
     }).catch(() => navigate('/'))
     timerRef.current = setInterval(() => setSeconds(s => s + 1), 1000)
     return () => clearInterval(timerRef.current)
-  }, [sessionId])
+  }, [sessionId, shareToken, isSharedSession, navigate])
+
+  const copyShareLink = async () => {
+    if (!shareUrl) return
+
+    try {
+      await navigator.clipboard.writeText(shareUrl)
+      setShareCopied(true)
+      window.setTimeout(() => setShareCopied(false), 1800)
+    } catch {
+      window.prompt('Copy this share link', shareUrl)
+    }
+  }
 
   if (!session || questions.length === 0) {
     return (
@@ -72,18 +108,28 @@ export default function QuizPage() {
     nextQuestion()
   }
 
-  const props = { q, questions, current, totalQ, answers, selectedAnswer, isRevealed, answerMode, correctCount, wrongCount, accuracy, timer, session, selectAnswer, nextQuestion, skipQuestion, navigate }
+  const props = { q, questions, current, totalQ, answers, selectedAnswer, isRevealed, answerMode, correctCount, wrongCount, accuracy, timer, session, selectAnswer, nextQuestion, skipQuestion, navigate, shareUrl, shareCopied, copyShareLink }
 
   return isMobile ? <MobileQuiz {...props} /> : <WebQuiz {...props} />
 }
 
 /* ─── Web Quiz ─── */
-function WebQuiz({ q, questions, current, totalQ, answers, selectedAnswer, isRevealed, answerMode, correctCount, wrongCount, accuracy, timer, session, selectAnswer, nextQuestion, skipQuestion, navigate }) {
+function WebQuiz({ q, questions, current, totalQ, answers, selectedAnswer, isRevealed, answerMode, correctCount, wrongCount, accuracy, timer, session, selectAnswer, nextQuestion, skipQuestion, navigate, shareUrl, shareCopied, copyShareLink }) {
   return (
     <div className="flex flex-col h-full bg-white">
       {/* Topbar */}
-      <div className="bg-white border-b border-black/8 px-7 h-[56px] flex items-center justify-between shrink-0">
-        <span className="text-[15px] text-gray-400 truncate max-w-55">{session.upload_name}</span>
+      <div className="bg-white border-b border-black/8 px-7 h-14 flex items-center justify-between shrink-0">
+        <div className="flex items-center gap-3 min-w-0">
+          <span className="text-[15px] text-gray-400 truncate max-w-55">{session.upload_name}</span>
+          {shareUrl && (
+            <button
+              onClick={copyShareLink}
+              className="bg-amber-400 px-3 py-1.5 rounded-full border border-gray-200 text-[13px] font-medium text-black hover:bg-amber-300 transition-colors"
+            >
+              {shareCopied ? 'Link copied' : 'Share quiz'}
+            </button>
+          )}
+        </div>
         <span className="text-[16px] text-gray-500">
           Question <span className="font-medium text-gray-900">{current + 1}</span> of <span className="font-medium text-gray-900">{totalQ}</span>
         </span>
@@ -164,12 +210,19 @@ function WebQuiz({ q, questions, current, totalQ, answers, selectedAnswer, isRev
 }
 
 /* ─── Mobile Quiz ─── */
-function MobileQuiz({ q, questions, current, totalQ, answers, selectedAnswer, isRevealed, timer, correctCount, wrongCount, selectAnswer, nextQuestion, skipQuestion, navigate }) {
+function MobileQuiz({ q, questions, current, totalQ, answers, selectedAnswer, isRevealed, timer, correctCount, wrongCount, selectAnswer, nextQuestion, skipQuestion, navigate, shareUrl, shareCopied, copyShareLink }) {
   return (
     <div className="flex flex-col h-full bg-white">
       {/* Topbar */}
       <div className="px-4 pt-4 pb-2 flex items-center justify-between border-b border-gray-100 shrink-0">
-        <span className="text-[13px] text-gray-400">Question {current + 1} of {totalQ}</span>
+        <div className="flex items-center gap-2">
+          <span className="text-[13px] text-gray-400">Question {current + 1} of {totalQ}</span>
+          {shareUrl && (
+            <button onClick={copyShareLink} className=" bg-amber-300 text-[12px] font-medium text-gray-600 underline underline-offset-2">
+              {shareCopied ? 'Copied' : 'Share'}
+            </button>
+          )}
+        </div>
         <span className="text-[13px] font-medium">{timer}</span>
       </div>
 
